@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ConnectX</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #101827;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    main {
+      max-width: 650px;
+      margin: 35px auto;
+      background: #1d293b;
+      padding: 24px;
+      border-radius: 16px;
+    }
+
+    h1 { color: #55d6be; }
+
+    input, button {
+      width: 100%;
+      padding: 13px;
+      margin: 7px 0;
+      border: 0;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    input { background: white; color: #111; }
+
+    button {
+      background: #55d6be;
+      color: #102027;
+      font-weight: bold;
+    }
+
+    .user {
+      padding: 13px;
+      margin-top: 9px;
+      background: #29384d;
+      border-radius: 8px;
+    }
+
+    .status { color: #55d6be; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>ConnectX</h1>
+    <p>Connect with people online — no account required.</p>
+
+    <input id="name" maxlength="30" placeholder="Enter your guest name">
+    <button id="join">Join ConnectX</button>
+
+    <p id="status">Not connected</p>
+
+    <h2>Find Online Users</h2>
+    <div id="users">Join to see online users.</div>
+  </main>
+
+  <script>
+    const API = "/api/presence";
+
+    const nameInput = document.getElementById("name");
+    const statusBox = document.getElementById("status");
+    const usersBox = document.getElementById("users");
+
+    let guestId = localStorage.getItem("connectx_id");
+
+    if (!guestId) {
+      guestId = crypto.randomUUID().replaceAll("-", "");
+      localStorage.setItem("connectx_id", guestId);
+    }
+
+    let guestName = localStorage.getItem("connectx_name") || "";
+    nameInput.value = guestName;
+
+    async function heartbeat() {
+      if (!guestName) return;
+
+      try {
+        const response = await fetch(API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: guestId,
+            name: guestName
+          })
+        });
+
+        if (!response.ok) throw new Error("Presence error");
+
+        statusBox.textContent = "You are online";
+        statusBox.className = "status";
+
+        await loadUsers();
+      } catch (error) {
+        statusBox.textContent = "Connection error. Please try again.";
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const response = await fetch(API);
+        const data = await response.json();
+
+        const others = (data.users || []).filter(
+          user => user.id !== guestId
+        );
+
+        usersBox.innerHTML = "";
+
+        if (others.length === 0) {
+          usersBox.textContent = "No other users online yet.";
+          return;
+        }
+
+        others.forEach(user => {
+          const item = document.createElement("div");
+          item.className = "user";
+          item.textContent = "🟢 " + user.name;
+          usersBox.appendChild(item);
+        });
+
+      } catch (error) {
+        usersBox.textContent = "Unable to load users.";
+      }
+    }
+
+    document.getElementById("join").addEventListener("click", async () => {
+      guestName = nameInput.value.trim();
+
+      if (!guestName) {
+        alert("Please enter a guest name.");
+        return;
+      }
+
+      localStorage.setItem("connectx_name", guestName);
+      await heartbeat();
+    });
+
+    setInterval(heartbeat, 30000);
+
+    if (guestName) heartbeat();
+  </script>
+</body>
+</html>

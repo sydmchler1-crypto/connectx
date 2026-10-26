@@ -1,156 +1,812 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ConnectX</title>
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="ConnectX lets guests share their online presence and discover other visitors without creating an account.">
+  <title>ConnectX — Meet who's online</title>
   <style>
-    * { box-sizing: border-box; }
+    :root {
+      color-scheme: dark;
+      --bg: #0b1220;
+      --surface: #111c2d;
+      --surface-2: #17253a;
+      --surface-3: #203149;
+      --text: #eef4fb;
+      --muted: #a5b4c8;
+      --subtle: #71839c;
+      --border: rgba(180, 201, 228, .14);
+      --accent: #6ee7d2;
+      --accent-strong: #2dd4bf;
+      --accent-ink: #062a2a;
+      --danger: #ffb4ab;
+      --danger-bg: rgba(239, 68, 68, .10);
+      --success: #82e6b4;
+      --warning: #f8d28a;
+      --shadow: 0 22px 60px rgba(0, 0, 0, .22);
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --page-width: 1120px;
+      --content-gap: 24px;
+    }
 
+    :root[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f3f7fb;
+      --surface: #ffffff;
+      --surface-2: #f5f8fc;
+      --surface-3: #eaf0f7;
+      --text: #152237;
+      --muted: #52627a;
+      --subtle: #6f7e92;
+      --border: rgba(30, 55, 86, .14);
+      --accent: #087f73;
+      --accent-strong: #0a9485;
+      --accent-ink: #ffffff;
+      --danger: #a82929;
+      --danger-bg: rgba(185, 28, 28, .08);
+      --success: #117449;
+      --warning: #8b5d0c;
+      --shadow: 0 18px 44px rgba(33, 55, 80, .09);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 92px; }
     body {
       margin: 0;
-      padding: 24px;
-      background: #101827;
-      color: white;
-      font-family: Arial, sans-serif;
+      min-width: 320px;
+      background:
+        radial-gradient(ellipse at 12% 0%, rgba(45, 212, 191, .09), transparent 32rem),
+        radial-gradient(ellipse at 100% 20%, rgba(59, 130, 246, .07), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+      font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
+    button, input, textarea, select { font: inherit; }
+    button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .55; }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    ::selection { color: var(--accent-ink); background: var(--accent); }
 
-    main {
-      max-width: 650px;
-      margin: 35px auto;
-      background: #1d293b;
-      padding: 24px;
-      border-radius: 16px;
+    .skip-link {
+      position: absolute; z-index: 20; top: 8px; left: 8px;
+      padding: 10px 14px; background: var(--surface); border-radius: 10px;
+      transform: translateY(-160%);
     }
+    .skip-link:focus { transform: translateY(0); }
 
-    h1 { color: #55d6be; }
-
-    input, button {
-      width: 100%;
-      padding: 13px;
-      margin: 7px 0;
-      border: 0;
-      border-radius: 8px;
-      font-size: 16px;
+    .site-header {
+      position: sticky; top: 0; z-index: 10;
+      border-bottom: 1px solid var(--border);
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(18px);
     }
-
-    input { background: white; color: #111; }
-
-    button {
-      background: #55d6be;
-      color: #102027;
-      font-weight: bold;
+    .header-inner {
+      width: min(var(--page-width), calc(100% - 40px)); min-height: 76px;
+      margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px;
     }
-
-    .user {
-      padding: 13px;
-      margin-top: 9px;
-      background: #29384d;
-      border-radius: 8px;
+    .brand { display: inline-flex; align-items: center; gap: 11px; text-decoration: none; font-size: 1.1rem; font-weight: 760; letter-spacing: -.035em; }
+    .brand-mark {
+      display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px;
+      background: var(--accent); color: var(--accent-ink); box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 16%, transparent);
     }
+    .brand-mark svg { width: 22px; height: 22px; }
+    .nav { display: flex; align-items: center; gap: 6px; }
+    .nav a {
+      display: inline-flex; align-items: center; min-height: 42px; padding: 8px 13px;
+      border-radius: 11px; color: var(--muted); text-decoration: none; font-size: .92rem; font-weight: 620;
+    }
+    .nav a:hover, .nav a[aria-current="location"] { background: var(--surface-2); color: var(--text); }
+    .header-status { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: .83rem; white-space: nowrap; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--subtle); flex: 0 0 auto; }
+    .status-dot.online { background: var(--success); box-shadow: 0 0 0 4px color-mix(in srgb, var(--success) 12%, transparent); }
+    .status-dot.error { background: var(--danger); }
 
-    .status { color: #55d6be; }
+    main { width: min(var(--page-width), calc(100% - 40px)); margin: 0 auto; }
+    .hero { padding: 66px 0 34px; max-width: 790px; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 9px; color: var(--accent); font-size: .8rem; font-weight: 760; letter-spacing: .11em; text-transform: uppercase; }
+    .eyebrow::before { content: ""; width: 22px; height: 2px; border-radius: 2px; background: currentColor; }
+    h1 { margin: 17px 0 15px; font-size: clamp(2.35rem, 5vw, 4.45rem); line-height: 1.03; letter-spacing: -.065em; max-width: 780px; }
+    .headline-accent { color: var(--accent); }
+    .hero-copy { max-width: 610px; margin: 0; color: var(--muted); font-size: clamp(1rem, 1.7vw, 1.12rem); }
+
+    .workspace { display: grid; grid-template-columns: minmax(270px, .78fr) minmax(0, 1.22fr); gap: var(--content-gap); align-items: start; padding-bottom: 68px; }
+    .panel { min-width: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+    .panel-body { padding: 25px; }
+    .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 22px; }
+    .panel-title { margin: 0; font-size: 1.15rem; letter-spacing: -.025em; }
+    .panel-description { margin: 5px 0 0; color: var(--muted); font-size: .9rem; }
+    .field-label { display: block; margin: 0 0 8px; font-weight: 680; font-size: .9rem; }
+    .field-hint { display: block; margin-top: 7px; color: var(--subtle); font-size: .8rem; }
+    .text-input, .text-area, .select-input {
+      width: 100%; min-height: 48px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px;
+      color: var(--text); background: var(--surface-2); outline-offset: 2px;
+    }
+    .text-input::placeholder, .text-area::placeholder { color: var(--subtle); }
+    .text-input:focus, .text-area:focus, .select-input:focus { border-color: var(--accent); }
+    .text-area { min-height: 118px; resize: vertical; }
+    .button {
+      min-height: 46px; border: 1px solid transparent; border-radius: 12px; padding: 11px 16px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+      font-weight: 720; text-decoration: none; transition: transform .16s ease, background-color .16s ease, border-color .16s ease;
+    }
+    .button:active:not(:disabled) { transform: translateY(1px); }
+    .button-primary { background: var(--accent); color: var(--accent-ink); }
+    .button-primary:hover:not(:disabled) { background: var(--accent-strong); }
+    .button-secondary { background: var(--surface-2); color: var(--text); border-color: var(--border); }
+    .button-secondary:hover:not(:disabled) { background: var(--surface-3); }
+    .button-quiet { background: transparent; color: var(--muted); border-color: var(--border); }
+    .button-quiet:hover:not(:disabled) { color: var(--text); background: var(--surface-2); }
+    .button-full { width: 100%; margin-top: 15px; }
+    .button svg { width: 18px; height: 18px; flex: 0 0 auto; }
+    .connection-card { padding: 15px; margin-top: 20px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 15px; }
+    .connection-top { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: .91rem; }
+    .connection-help { margin: 7px 0 0 18px; color: var(--muted); font-size: .83rem; }
+    .notice { margin-top: 15px; padding: 12px 13px; border-radius: 12px; font-size: .87rem; overflow-wrap: anywhere; }
+    .notice[hidden] { display: none; }
+    .notice.error { color: var(--danger); background: var(--danger-bg); border: 1px solid color-mix(in srgb, var(--danger) 25%, transparent); }
+    .notice.info { color: var(--muted); background: var(--surface-2); border: 1px solid var(--border); }
+    .notice.success { color: var(--success); background: color-mix(in srgb, var(--success) 8%, transparent); border: 1px solid color-mix(in srgb, var(--success) 22%, transparent); }
+    .privacy-note { margin: 17px 0 0; font-size: .79rem; color: var(--subtle); }
+
+    .online-panel { min-height: 428px; }
+    .online-panel .panel-body { padding-bottom: 18px; }
+    .count-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 35px; min-height: 30px; padding: 3px 9px; border-radius: 20px; background: var(--surface-3); color: var(--text); font-size: .85rem; font-weight: 760; }
+    .online-toolbar { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; }
+    .search-wrap { position: relative; flex: 1; min-width: 0; }
+    .search-wrap svg { position: absolute; left: 12px; top: 50%; width: 17px; height: 17px; color: var(--subtle); transform: translateY(-50%); pointer-events: none; }
+    .search-input { width: 100%; min-height: 42px; padding: 9px 12px 9px 38px; border-radius: 11px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); }
+    .icon-button { width: 42px; min-width: 42px; height: 42px; display: inline-grid; place-items: center; border: 1px solid var(--border); border-radius: 11px; background: var(--surface-2); color: var(--muted); }
+    .icon-button:hover:not(:disabled) { color: var(--text); background: var(--surface-3); }
+    .icon-button svg { width: 18px; height: 18px; }
+    .user-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+    .user-row { min-width: 0; display: flex; align-items: center; gap: 13px; padding: 12px; border-radius: 14px; background: var(--surface-2); border: 1px solid transparent; }
+    .user-avatar { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; flex: 0 0 auto; background: var(--surface-3); color: var(--accent); font-weight: 800; }
+    .user-copy { min-width: 0; flex: 1; }
+    .user-name { display: block; font-size: .94rem; font-weight: 720; overflow-wrap: anywhere; }
+    .user-state { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: .79rem; margin-top: 2px; }
+    .user-state .status-dot { width: 6px; height: 6px; }
+    .empty-state { min-height: 240px; padding: 32px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 1px dashed var(--border); border-radius: 16px; }
+    .empty-icon { width: 48px; height: 48px; display: grid; place-items: center; margin-bottom: 14px; border-radius: 16px; color: var(--accent); background: var(--surface-3); }
+    .empty-icon svg { width: 23px; height: 23px; }
+    .empty-state h3 { margin: 0; font-size: 1rem; }
+    .empty-state p { max-width: 320px; margin: 6px 0 0; color: var(--muted); font-size: .87rem; }
+    .list-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; color: var(--subtle); font-size: .78rem; }
+    .last-updated { overflow-wrap: anywhere; }
+    .section { padding: 0 0 58px; scroll-margin-top: 95px; }
+    .section-heading { margin-bottom: 22px; }
+    .section-heading h2 { margin: 0; font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -.045em; }
+    .section-heading p { margin: 7px 0 0; color: var(--muted); max-width: 690px; }
+    .settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--content-gap); align-items: start; }
+    .setting-row { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 16px 0; border-bottom: 1px solid var(--border); }
+    .setting-row:first-of-type { padding-top: 0; }
+    .setting-row:last-of-type { border-bottom: 0; }
+    .setting-label { font-weight: 680; font-size: .92rem; }
+    .setting-description { display: block; margin-top: 3px; color: var(--muted); font-size: .81rem; max-width: 330px; }
+    .setting-control { flex: 0 0 auto; }
+    .select-input { min-height: 42px; width: auto; max-width: 150px; padding: 8px 10px; }
+    .switch { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+    .switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .switch-track { width: 46px; height: 27px; border-radius: 20px; background: var(--surface-3); border: 1px solid var(--border); transition: background .18s ease; }
+    .switch-track::after { content: ""; display: block; width: 19px; height: 19px; margin: 3px; border-radius: 50%; background: var(--muted); transition: transform .18s ease, background .18s ease; }
+    .switch input:checked + .switch-track { background: var(--accent); }
+    .switch input:checked + .switch-track::after { background: var(--accent-ink); transform: translateX(19px); }
+    .switch input:focus-visible + .switch-track { outline: 3px solid var(--accent); outline-offset: 3px; }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--content-gap); }
+    .about-copy { color: var(--muted); margin: 9px 0 0; }
+    .about-list { margin: 14px 0 0; padding-left: 20px; color: var(--muted); }
+    .about-list li + li { margin-top: 7px; }
+    .footer { padding: 22px 0 32px; border-top: 1px solid var(--border); color: var(--subtle); font-size: .82rem; }
+    .footer-inner { width: min(var(--page-width), calc(100% - 40px)); margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+    .footer a { color: var(--muted); text-underline-offset: 3px; }
+    .compact-mode { --content-gap: 14px; }
+    .compact-mode .panel-body { padding: 19px; }
+    .reduced-motion *, .reduced-motion *::before, .reduced-motion *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+    .visually-hidden { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
+    .loading-bar { height: 3px; width: 100%; margin-top: -3px; overflow: hidden; background: transparent; }
+    .loading-bar::after { content: ""; display: block; width: 28%; height: 100%; background: var(--accent); transform: translateX(-120%); opacity: 0; }
+    .loading .loading-bar::after { opacity: 1; animation: progress 1.1s ease-in-out infinite; }
+    @keyframes progress { to { transform: translateX(380%); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+    @media (max-width: 860px) {
+      .header-inner { width: min(var(--page-width), calc(100% - 28px)); min-height: 68px; gap: 12px; }
+      .header-status { display: none; }
+      main { width: min(var(--page-width), calc(100% - 28px)); }
+      .hero { padding-top: 48px; }
+      .workspace { grid-template-columns: minmax(0, 1fr); }
+      .online-panel { min-height: 0; }
+      .settings-grid, .about-grid { grid-template-columns: minmax(0, 1fr); }
+      .footer-inner { width: min(var(--page-width), calc(100% - 28px)); }
+    }
+    @media (max-width: 520px) {
+      .header-inner { flex-wrap: wrap; padding: 10px 0 11px; }
+      .brand { font-size: 1rem; }
+      .brand-mark { width: 34px; height: 34px; border-radius: 11px; }
+      .nav { width: 100%; gap: 4px; }
+      .nav a { justify-content: center; flex: 1; min-height: 38px; padding: 7px 8px; font-size: .84rem; }
+      html { scroll-padding-top: 118px; }
+      .hero { padding-top: 38px; padding-bottom: 27px; }
+      h1 { font-size: clamp(2.25rem, 12vw, 3.1rem); }
+      .panel-body { padding: 19px; }
+      .panel-head { margin-bottom: 18px; }
+      .workspace { padding-bottom: 48px; }
+      .online-toolbar { align-items: stretch; }
+      .list-footer { align-items: flex-start; }
+      .section { padding-bottom: 42px; }
+      .setting-row { align-items: flex-start; gap: 12px; }
+      .footer-inner { align-items: flex-start; flex-direction: column; gap: 6px; }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <h1>ConnectX</h1>
-    <p>Connect with people online — no account required.</p>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#home" aria-label="ConnectX home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 12.5 6.8 14.2a3.2 3.2 0 0 1-4.5-4.5l4-4a3.2 3.2 0 0 1 4.5 0"/><path d="m15.5 11.5 1.7-1.7a3.2 3.2 0 0 1 4.5 4.5l-4 4a3.2 3.2 0 0 1-4.5 0"/><path d="m8 16 8-8"/></svg>
+        </span>
+        <span>ConnectX</span>
+      </a>
+      <nav class="nav" aria-label="Main navigation">
+        <a href="#home" aria-current="location">Discover</a>
+        <a href="#settings">Settings</a>
+        <a href="#about">About</a>
+      </nav>
+      <div class="header-status" aria-live="polite"><span class="status-dot" id="headerDot"></span><span id="headerStatus">Not connected</span></div>
+    </div>
+    <div class="loading-bar" id="loadingBar" aria-hidden="true"></div>
+  </header>
 
-    <input id="name" maxlength="30" placeholder="Enter your guest name">
-    <button id="join">Join ConnectX</button>
+  <main id="main">
+    <section class="hero" id="home" aria-labelledby="heroTitle">
+      <span class="eyebrow">Anonymous guest presence</span>
+      <h1 id="heroTitle">A little closer to <span class="headline-accent">people online.</span></h1>
+      <p class="hero-copy">Choose a guest name, join the live presence list, and see who else is here. No account creation is required for this presence feature.</p>
+    </section>
 
-    <p id="status">Not connected</p>
+    <section class="workspace" aria-label="ConnectX presence">
+      <article class="panel" aria-labelledby="joinTitle">
+        <div class="panel-body">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title" id="joinTitle">Your guest profile</h2>
+              <p class="panel-description">Set the name other visitors will see.</p>
+            </div>
+          </div>
+          <form id="joinForm" novalidate>
+            <label class="field-label" for="guestName">Guest name</label>
+            <input class="text-input" id="guestName" name="guestName" type="text" maxlength="30" minlength="1" autocomplete="nickname" placeholder="e.g. RiverStone" required aria-describedby="nameHint">
+            <span class="field-hint" id="nameHint">1–30 characters. Avoid sharing personal information.</span>
+            <button class="button button-primary button-full" id="joinButton" type="submit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg>
+              <span id="joinButtonText">Join ConnectX</span>
+            </button>
+          </form>
+          <div class="notice" id="connectionNotice" role="status" aria-live="polite" hidden></div>
+          <div class="connection-card" aria-label="Connection state">
+            <div class="connection-top"><span class="status-dot" id="profileDot"></span><span id="profileStatus">Not connected</span></div>
+            <p class="connection-help" id="profileHelp">Join to publish your presence and load the current guest list.</p>
+          </div>
+          <p class="privacy-note">Your guest name and browser-generated guest ID are sent to the ConnectX presence API when you join. The online list may be visible to other visitors.</p>
+        </div>
+      </article>
 
-    <h2>Find Online Users</h2>
-    <div id="users">Join to see online users.</div>
+      <article class="panel online-panel" aria-labelledby="onlineTitle">
+        <div class="panel-body">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title" id="onlineTitle">Find online users</h2>
+              <p class="panel-description">Guests recently seen by the presence service.</p>
+            </div>
+            <span class="count-pill" id="userCount" aria-label="Online users">—</span>
+          </div>
+          <div class="online-toolbar">
+            <label class="search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+              <span class="visually-hidden">Search online users</span>
+              <input class="search-input" id="userSearch" type="search" placeholder="Search guest names" autocomplete="off">
+            </label>
+            <button class="icon-button" id="refreshButton" type="button" aria-label="Refresh online users" title="Refresh online users">
+              <svg id="refreshIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.5 9A7 7 0 0 1 18 6l2 6M4 12l2 6a7 7 0 0 0 12.5-3"/></svg>
+            </button>
+          </div>
+          <div id="usersContainer" aria-live="polite" aria-busy="false">
+            <div class="empty-state">
+              <div class="empty-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20v-1.5A4.5 4.5 0 0 1 7 14h4a4.5 4.5 0 0 1 4.5 4.5V20"/><path d="M16 4.8a3.5 3.5 0 0 1 0 6.5M18 14.5a4.5 4.5 0 0 1 3.5 4.3V20"/></svg></div>
+              <h3>Join to see who's online</h3>
+              <p>Your current online guest list will appear here when the presence service is available.</p>
+            </div>
+          </div>
+          <div class="list-footer"><span id="listStatus">Waiting to connect</span><span class="last-updated" id="lastUpdated">Not refreshed yet</span></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="section" id="settings" aria-labelledby="settingsTitle">
+      <div class="section-heading">
+        <span class="eyebrow">Personalize</span>
+        <h2 id="settingsTitle">Settings</h2>
+        <p>These preferences are saved in this browser. They do not change account or server settings.</p>
+      </div>
+      <div class="settings-grid">
+        <article class="panel">
+          <div class="panel-body">
+            <div class="panel-head"><div><h3 class="panel-title">Appearance & accessibility</h3><p class="panel-description">Adjust the interface to your preference.</p></div></div>
+            <div class="setting-row">
+              <div><label class="setting-label" for="themeSelect">Theme</label><span class="setting-description">Choose a light or dark appearance.</span></div>
+              <div class="setting-control"><select class="select-input" id="themeSelect"><option value="dark">Dark</option><option value="light">Light</option></select></div>
+            </div>
+            <div class="setting-row">
+              <div><label class="setting-label" for="compactToggle">Compact layout</label><span class="setting-description">Reduce spacing between panels and controls.</span></div>
+              <label class="switch setting-control"><input id="compactToggle" type="checkbox"><span class="switch-track" aria-hidden="true"></span><span class="visually-hidden">Compact layout</span></label>
+            </div>
+            <div class="setting-row">
+              <div><label class="setting-label" for="motionToggle">Reduce motion</label><span class="setting-description">Minimize interface transitions and animation.</span></div>
+              <label class="switch setting-control"><input id="motionToggle" type="checkbox"><span class="switch-track" aria-hidden="true"></span><span class="visually-hidden">Reduce motion</span></label>
+            </div>
+          </div>
+        </article>
+        <article class="panel">
+          <div class="panel-body">
+            <div class="panel-head"><div><h3 class="panel-title">Guest data</h3><p class="panel-description">Manage the identity stored in this browser.</p></div></div>
+            <p class="about-copy" style="margin-top:0">ConnectX stores your guest ID and preferred name in local browser storage so the same browser can return with the same guest identity. Clearing it creates a new guest identity; the old presence may remain visible until it expires.</p>
+            <button class="button button-secondary button-full" id="resetIdentityButton" type="button">Reset guest identity</button>
+            <div class="notice info" id="settingsNotice" role="status" aria-live="polite" hidden></div>
+          </div>
+        </article>
+      </div>
+
+      <div class="settings-grid" style="margin-top:24px">
+        <article class="panel">
+          <div class="panel-body">
+            <div class="panel-head"><div><h3 class="panel-title">Report a problem</h3><p class="panel-description">Prepare a report you can copy and send to the project maintainer.</p></div></div>
+            <form id="reportForm" novalidate>
+              <label class="field-label" for="problemDescription">What went wrong?</label>
+              <textarea class="text-area" id="problemDescription" maxlength="1500" required placeholder="Describe what you clicked and what happened."></textarea>
+              <span class="field-hint">Do not include passwords, access tokens, or other secrets.</span>
+              <button class="button button-secondary button-full" type="submit">Prepare report</button>
+            </form>
+            <div class="notice info" id="reportNotice" role="status" aria-live="polite" hidden></div>
+            <textarea class="text-area" id="reportDraft" aria-label="Problem report draft" readonly hidden style="margin-top:12px"></textarea>
+            <button class="button button-quiet button-full" id="copyReportButton" type="button" hidden>Copy report draft</button>
+          </div>
+        </article>
+        <article class="panel" id="about">
+          <div class="panel-body">
+            <div class="panel-head"><div><h3 class="panel-title">About ConnectX</h3><p class="panel-description">Anonymous guest presence</p></div></div>
+            <p class="about-copy" style="margin-top:0">ConnectX is a guest-based way to share online presence and discover other visitors. This build includes the presence interface and browser preferences.</p>
+            <ul class="about-list">
+              <li><strong>Version:</strong> 0.1.0</li>
+              <li><strong>Presence endpoint:</strong> <code>/api/presence</code></li>
+              <li><strong>Storage:</strong> browser local storage for guest identity and preferences; presence data depends on the configured backend.</li>
+            </ul>
+            <p class="about-copy">Chat, connection requests, file transfers, and audio calls require additional server endpoints and, for calls, WebRTC signaling and network traversal support. They are not represented as active features in this page.</p>
+          </div>
+        </article>
+      </div>
+    </section>
   </main>
 
+  <footer class="footer">
+    <div class="footer-inner"><span>ConnectX · Anonymous guest presence</span><a href="#home">Back to top</a></div>
+  </footer>
+
   <script>
-    const API = "/api/presence";
+    (() => {
+      "use strict";
 
-    const nameInput = document.getElementById("name");
-    const statusBox = document.getElementById("status");
-    const usersBox = document.getElementById("users");
+      const API = "/api/presence";
+      const STORAGE = {
+        id: "connectx_id",
+        name: "connectx_name",
+        settings: "connectx_settings_v1"
+      };
+      const PRESENCE_REFRESH_MS = 30000;
+      const elements = {
+        body: document.body,
+        headerDot: document.getElementById("headerDot"),
+        headerStatus: document.getElementById("headerStatus"),
+        loadingBar: document.getElementById("loadingBar"),
+        guestName: document.getElementById("guestName"),
+        joinForm: document.getElementById("joinForm"),
+        joinButton: document.getElementById("joinButton"),
+        joinButtonText: document.getElementById("joinButtonText"),
+        connectionNotice: document.getElementById("connectionNotice"),
+        profileDot: document.getElementById("profileDot"),
+        profileStatus: document.getElementById("profileStatus"),
+        profileHelp: document.getElementById("profileHelp"),
+        userCount: document.getElementById("userCount"),
+        userSearch: document.getElementById("userSearch"),
+        refreshButton: document.getElementById("refreshButton"),
+        usersContainer: document.getElementById("usersContainer"),
+        listStatus: document.getElementById("listStatus"),
+        lastUpdated: document.getElementById("lastUpdated"),
+        themeSelect: document.getElementById("themeSelect"),
+        compactToggle: document.getElementById("compactToggle"),
+        motionToggle: document.getElementById("motionToggle"),
+        resetIdentityButton: document.getElementById("resetIdentityButton"),
+        settingsNotice: document.getElementById("settingsNotice"),
+        reportForm: document.getElementById("reportForm"),
+        problemDescription: document.getElementById("problemDescription"),
+        reportNotice: document.getElementById("reportNotice"),
+        reportDraft: document.getElementById("reportDraft"),
+        copyReportButton: document.getElementById("copyReportButton")
+      };
 
-    let guestId = localStorage.getItem("connectx_id");
+      let guestId = safeGet(STORAGE.id);
+      let guestName = safeGet(STORAGE.name) || "";
+      let currentUsers = [];
+      let heartbeatTimer = null;
+      let isJoined = false;
+      let isRequesting = false;
+      let latestError = "";
 
-    if (!guestId) {
-      guestId = crypto.randomUUID().replaceAll("-", "");
-      localStorage.setItem("connectx_id", guestId);
-    }
-
-    let guestName = localStorage.getItem("connectx_name") || "";
-    nameInput.value = guestName;
-
-    async function heartbeat() {
-      if (!guestName) return;
-
-      try {
-        const response = await fetch(API, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: guestId,
-            name: guestName
-          })
-        });
-
-        if (!response.ok) throw new Error("Presence error");
-
-        statusBox.textContent = "You are online";
-        statusBox.className = "status";
-
-        await loadUsers();
-      } catch (error) {
-        statusBox.textContent = "Connection error. Please try again.";
+      function safeGet(key) {
+        try { return localStorage.getItem(key); } catch (_) { return null; }
       }
-    }
-
-    async function loadUsers() {
-      try {
-        const response = await fetch(API);
-        const data = await response.json();
-
-        const others = (data.users || []).filter(
-          user => user.id !== guestId
-        );
-
-        usersBox.innerHTML = "";
-
-        if (others.length === 0) {
-          usersBox.textContent = "No other users online yet.";
+      function safeSet(key, value) {
+        try { localStorage.setItem(key, value); return true; } catch (_) { return false; }
+      }
+      function safeRemove(key) {
+        try { localStorage.removeItem(key); return true; } catch (_) { return false; }
+      }
+      function createGuestId() {
+        try {
+          if (globalThis.crypto && typeof crypto.randomUUID === "function") {
+            return crypto.randomUUID().replace(/-/g, "");
+          }
+          const values = new Uint8Array(20);
+          if (globalThis.crypto && typeof crypto.getRandomValues === "function") {
+            crypto.getRandomValues(values);
+            return Array.from(values, v => v.toString(16).padStart(2, "0")).join("");
+          }
+        } catch (_) { /* Use the fallback below when secure random is unavailable. */ }
+        return "guest_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 18);
+      }
+      function ensureGuestId() {
+        if (!guestId || !/^[a-zA-Z0-9_-]{8,80}$/.test(guestId)) {
+          guestId = createGuestId();
+          safeSet(STORAGE.id, guestId);
+        }
+        return guestId;
+      }
+      function readSettings() {
+        const defaults = { theme: "dark", compact: false, reducedMotion: false };
+        try {
+          const parsed = JSON.parse(safeGet(STORAGE.settings) || "null");
+          if (!parsed || typeof parsed !== "object") return defaults;
+          return {
+            theme: parsed.theme === "light" ? "light" : "dark",
+            compact: parsed.compact === true,
+            reducedMotion: parsed.reducedMotion === true
+          };
+        } catch (_) { return defaults; }
+      }
+      let settings = readSettings();
+      function saveSettings() {
+        if (!safeSet(STORAGE.settings, JSON.stringify(settings))) {
+          showNotice(elements.settingsNotice, "Browser storage is unavailable. This preference may not be saved.", "error");
+        } else {
+          showNotice(elements.settingsNotice, "Settings saved in this browser.", "success");
+        }
+      }
+      function applySettings() {
+        document.documentElement.dataset.theme = settings.theme;
+        elements.themeSelect.value = settings.theme;
+        elements.compactToggle.checked = settings.compact;
+        elements.motionToggle.checked = settings.reducedMotion;
+        elements.body.classList.toggle("compact-mode", settings.compact);
+        elements.body.classList.toggle("reduced-motion", settings.reducedMotion);
+        const themeColor = settings.theme === "light" ? "#f3f7fb" : "#0b1220";
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) metaTheme.setAttribute("content", themeColor);
+      }
+      function showNotice(element, message, kind) {
+        element.textContent = message;
+        element.className = "notice " + (kind || "info");
+        element.hidden = false;
+      }
+      function clearNotice(element) {
+        element.textContent = "";
+        element.hidden = true;
+        element.className = "notice";
+      }
+      function setLoading(active) {
+        elements.body.classList.toggle("loading", active);
+        elements.usersContainer.setAttribute("aria-busy", String(active));
+        elements.refreshButton.disabled = active;
+      }
+      function setConnectionState(state, help, message, kind) {
+        const online = state === "online";
+        const error = state === "error";
+        elements.headerDot.className = "status-dot" + (online ? " online" : error ? " error" : "");
+        elements.profileDot.className = "status-dot" + (online ? " online" : error ? " error" : "");
+        const label = online ? "You are online" : error ? "Connection problem" : state === "connecting" ? "Connecting…" : "Not connected";
+        elements.headerStatus.textContent = label;
+        elements.profileStatus.textContent = label;
+        elements.profileHelp.textContent = help;
+        if (message) showNotice(elements.connectionNotice, message, kind || "info");
+        else clearNotice(elements.connectionNotice);
+      }
+      function explainApiError(status, payload) {
+        const serverMessage = payload && typeof payload.error === "string" ? payload.error : "";
+        if (status === 404) return "The presence endpoint was not found (404). Confirm that api/presence.js is included in this Vercel deployment.";
+        if (status === 401 || status === 403) return "The presence service rejected the request (" + status + "). Check the server-side Redis credentials and permissions.";
+        if (status >= 500) return "The presence server failed (" + status + "). Check the Vercel function logs and Redis environment variables. No secret values are shown here.";
+        if (status === 429) return "The presence service is temporarily rate-limiting requests. Wait a moment and try again.";
+        if (serverMessage.toLowerCase().includes("environment variable")) return "The presence service is missing a required server-side environment variable. Check the Vercel project settings.";
+        return serverMessage ? "Presence service error: " + serverMessage : "The presence service returned HTTP " + status + ".";
+      }
+      async function requestApi(method, body) {
+        let response;
+        try {
+          response = await fetch(API, {
+            method,
+            headers: body ? { "Content-Type": "application/json", "Accept": "application/json" } : { "Accept": "application/json" },
+            body: body ? JSON.stringify(body) : undefined,
+            cache: "no-store",
+            credentials: "same-origin"
+          });
+        } catch (_) {
+          throw new Error("Could not reach the presence API. Check your connection and confirm the site is deployed with /api/presence.");
+        }
+        let payload = null;
+        try { payload = await response.json(); } catch (_) { /* A non-JSON response is handled below. */ }
+        if (!response.ok) throw new Error(explainApiError(response.status, payload));
+        if (!payload || typeof payload !== "object" || payload.success === false) {
+          throw new Error(payload && typeof payload.error === "string" ? payload.error : "The presence API returned an unexpected response.");
+        }
+        return payload;
+      }
+      function makeEmptyState(title, description) {
+        const box = document.createElement("div");
+        box.className = "empty-state";
+        const icon = document.createElement("div");
+        icon.className = "empty-icon";
+        icon.setAttribute("aria-hidden", "true");
+        icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20v-1.5A4.5 4.5 0 0 1 7 14h4a4.5 4.5 0 0 1 4.5 4.5V20"/><path d="M16 4.8a3.5 3.5 0 0 1 0 6.5M18 14.5a4.5 4.5 0 0 1 3.5 4.3V20"/></svg>';
+        const heading = document.createElement("h3");
+        heading.textContent = title;
+        const copy = document.createElement("p");
+        copy.textContent = description;
+        box.append(icon, heading, copy);
+        return box;
+      }
+      function renderUsers() {
+        const query = elements.userSearch.value.trim().toLocaleLowerCase();
+        const users = currentUsers.filter(user => {
+          const name = typeof user.name === "string" ? user.name : "Guest";
+          return user.id !== guestId && name.toLocaleLowerCase().includes(query);
+        });
+        elements.userCount.textContent = String(users.length);
+        elements.usersContainer.replaceChildren();
+        if (!users.length) {
+          const noUsers = currentUsers.filter(user => user.id !== guestId).length === 0;
+          elements.usersContainer.appendChild(makeEmptyState(
+            query ? "No matches found" : (isJoined ? "No other guests online yet" : "Join to see who's online"),
+            query ? "Try another guest name." : (isJoined ? "When other visitors join, they will appear here." : "Join ConnectX to load the current guest list from the presence service.")
+          ));
+          elements.listStatus.textContent = query && !noUsers ? "No matching guests" : (isJoined ? "Presence list loaded" : "Waiting to connect");
           return;
         }
-
-        others.forEach(user => {
-          const item = document.createElement("div");
-          item.className = "user";
-          item.textContent = "🟢 " + user.name;
-          usersBox.appendChild(item);
-        });
-
-      } catch (error) {
-        usersBox.textContent = "Unable to load users.";
+        const list = document.createElement("ul");
+        list.className = "user-list";
+        list.setAttribute("aria-label", "Online guests");
+        for (const user of users) {
+          const item = document.createElement("li");
+          item.className = "user-row";
+          const avatar = document.createElement("span");
+          avatar.className = "user-avatar";
+          avatar.setAttribute("aria-hidden", "true");
+          const name = typeof user.name === "string" && user.name.trim() ? user.name.trim().slice(0, 30) : "Guest";
+          avatar.textContent = name.trim().charAt(0).toLocaleUpperCase() || "G";
+          const copy = document.createElement("span");
+          copy.className = "user-copy";
+          const displayName = document.createElement("span");
+          displayName.className = "user-name";
+          displayName.textContent = name;
+          const state = document.createElement("span");
+          state.className = "user-state";
+          const dot = document.createElement("span");
+          dot.className = "status-dot online";
+          dot.setAttribute("aria-hidden", "true");
+          const stateText = document.createElement("span");
+          stateText.textContent = "Recently active";
+          state.append(dot, stateText);
+          copy.append(displayName, state);
+          item.append(avatar, copy);
+          list.appendChild(item);
+        }
+        elements.usersContainer.appendChild(list);
+        elements.listStatus.textContent = "Live presence list";
       }
-    }
-
-    document.getElementById("join").addEventListener("click", async () => {
-      guestName = nameInput.value.trim();
-
-      if (!guestName) {
-        alert("Please enter a guest name.");
-        return;
+      async function refreshUsers(options = {}) {
+        if (isRequesting) return;
+        isRequesting = true;
+        setLoading(true);
+        try {
+          const payload = await requestApi("GET");
+          currentUsers = Array.isArray(payload.users) ? payload.users.filter(user => user && typeof user === "object" && typeof user.id === "string") : [];
+          latestError = "";
+          elements.lastUpdated.textContent = "Updated " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+          renderUsers();
+          if (isJoined) setConnectionState("online", "Your guest presence is being refreshed periodically.");
+          else if (options.initial) elements.listStatus.textContent = "Presence service available";
+        } catch (error) {
+          latestError = error instanceof Error ? error.message : "Unable to load online users.";
+          elements.lastUpdated.textContent = "Refresh failed";
+          if (isJoined || options.fromJoin) {
+            setConnectionState("error", "The presence API could not complete the request.", latestError, "error");
+          } else {
+            showNotice(elements.connectionNotice, latestError, "error");
+          }
+          elements.listStatus.textContent = "Unable to refresh";
+          elements.userCount.textContent = "—";
+          elements.usersContainer.replaceChildren(makeEmptyState("Presence service unavailable", latestError));
+        } finally {
+          isRequesting = false;
+          setLoading(false);
+        }
+      }
+      async function sendHeartbeat() {
+        if (!isJoined || !guestName) return;
+        try {
+          await requestApi("POST", { id: ensureGuestId(), name: guestName });
+          latestError = "";
+          setConnectionState("online", "Your presence is updated automatically while this page is open.");
+          await refreshUsers();
+        } catch (error) {
+          latestError = error instanceof Error ? error.message : "Presence update failed.";
+          setConnectionState("error", "The last presence update failed. The service may still show your previous presence until it expires.", latestError, "error");
+        }
+      }
+      function startHeartbeat() {
+        if (heartbeatTimer !== null) window.clearInterval(heartbeatTimer);
+        heartbeatTimer = window.setInterval(sendHeartbeat, PRESENCE_REFRESH_MS);
+      }
+      async function joinConnectX(event) {
+        event.preventDefault();
+        const proposedName = elements.guestName.value.trim();
+        if (!proposedName || proposedName.length > 30) {
+          elements.guestName.setAttribute("aria-invalid", "true");
+          elements.guestName.focus();
+          showNotice(elements.connectionNotice, "Enter a guest name from 1 to 30 characters.", "error");
+          return;
+        }
+        elements.guestName.removeAttribute("aria-invalid");
+        if (isRequesting) return;
+        guestName = proposedName;
+        if (!safeSet(STORAGE.name, guestName)) {
+          showNotice(elements.connectionNotice, "Browser storage is unavailable. Your name may not be remembered after this page closes.", "info");
+        }
+        isJoined = true;
+        ensureGuestId();
+        elements.joinButton.disabled = true;
+        elements.joinButtonText.textContent = "Connecting…";
+        setConnectionState("connecting", "Connecting to the presence service…");
+        setLoading(true);
+        try {
+          await requestApi("POST", { id: guestId, name: guestName });
+          setConnectionState("online", "Your presence is updated automatically while this page is open.", "You joined ConnectX. Your guest name is visible to other visitors on the online list.", "success");
+          currentUsers = [];
+          await refreshUsers({ fromJoin: true });
+          startHeartbeat();
+        } catch (error) {
+          isJoined = false;
+          const message = error instanceof Error ? error.message : "Connection failed.";
+          setConnectionState("error", "Your presence was not confirmed by the server.", message, "error");
+        } finally {
+          elements.joinButton.disabled = false;
+          elements.joinButtonText.textContent = isJoined ? "Refresh my presence" : "Join ConnectX";
+          setLoading(false);
+        }
+      }
+      function restoreProfile() {
+        ensureGuestId();
+        if (guestName) elements.guestName.value = guestName;
+      }
+      function handleResetIdentity() {
+        const confirmed = window.confirm("Reset the guest identity saved in this browser? Your old presence may remain visible until the server expires it.");
+        if (!confirmed) return;
+        if (heartbeatTimer !== null) window.clearInterval(heartbeatTimer);
+        heartbeatTimer = null;
+        isJoined = false;
+        guestId = createGuestId();
+        guestName = "";
+        safeSet(STORAGE.id, guestId);
+        safeRemove(STORAGE.name);
+        elements.guestName.value = "";
+        elements.joinButtonText.textContent = "Join ConnectX";
+        currentUsers = currentUsers.filter(user => user.id !== guestId);
+        setConnectionState("idle", "Your local guest identity was reset. Join again to publish a new one.");
+        showNotice(elements.settingsNotice, "A new guest identity has been created in this browser. The previous server-side presence will expire according to the server's TTL.", "success");
+        renderUsers();
+      }
+      function prepareProblemReport(event) {
+        event.preventDefault();
+        const description = elements.problemDescription.value.trim();
+        if (description.length < 8) {
+          elements.problemDescription.setAttribute("aria-invalid", "true");
+          elements.problemDescription.focus();
+          showNotice(elements.reportNotice, "Please describe the issue in at least 8 characters.", "error");
+          return;
+        }
+        elements.problemDescription.removeAttribute("aria-invalid");
+        const report = [
+          "ConnectX problem report",
+          "Time: " + new Date().toISOString(),
+          "Page: " + window.location.href,
+          "Browser: " + navigator.userAgent,
+          "Presence status: " + (isJoined ? "joined" : "not joined"),
+          "Last presence error: " + (latestError || "none recorded"),
+          "Description:",
+          description,
+          "",
+          "Review this report and remove any private information before sharing. This draft has not been submitted."
+        ].join("\n");
+        elements.reportDraft.value = report;
+        elements.reportDraft.hidden = false;
+        elements.copyReportButton.hidden = false;
+        showNotice(elements.reportNotice, "Report draft prepared locally. It has not been sent to anyone.", "success");
+      }
+      async function copyProblemReport() {
+        try {
+          if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+            await navigator.clipboard.writeText(elements.reportDraft.value);
+          } else {
+            elements.reportDraft.hidden = false;
+            elements.reportDraft.focus();
+            elements.reportDraft.select();
+            const copied = document.execCommand("copy");
+            if (!copied) throw new Error("Copy unavailable");
+          }
+          showNotice(elements.reportNotice, "Report draft copied. It has not been submitted.", "success");
+        } catch (_) {
+          elements.reportDraft.hidden = false;
+          elements.reportDraft.focus();
+          elements.reportDraft.select();
+          showNotice(elements.reportNotice, "Automatic copy was blocked. The report is selected so you can copy it manually.", "info");
+        }
+      }
+      function setupNav() {
+        const navLinks = Array.from(document.querySelectorAll(".nav a"));
+        const sections = navLinks.map(link => document.querySelector(link.getAttribute("href"))).filter(Boolean);
+        if ("IntersectionObserver" in window) {
+          const observer = new IntersectionObserver(entries => {
+            const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+            if (!visible) return;
+            for (const link of navLinks) {
+              if (link.getAttribute("href") === "#" + visible.target.id) link.setAttribute("aria-current", "location");
+              else link.removeAttribute("aria-current");
+            }
+          }, { rootMargin: "-20% 0px -65% 0px", threshold: [0, .2, .5] });
+          sections.forEach(section => observer.observe(section));
+        }
       }
 
-      localStorage.setItem("connectx_name", guestName);
-      await heartbeat();
-    });
+      elements.joinForm.addEventListener("submit", joinConnectX);
+      elements.refreshButton.addEventListener("click", () => refreshUsers({ initial: true }));
+      elements.userSearch.addEventListener("input", renderUsers);
+      elements.themeSelect.addEventListener("change", () => { settings.theme = elements.themeSelect.value === "light" ? "light" : "dark"; applySettings(); saveSettings(); });
+      elements.compactToggle.addEventListener("change", () => { settings.compact = elements.compactToggle.checked; applySettings(); saveSettings(); });
+      elements.motionToggle.addEventListener("change", () => { settings.reducedMotion = elements.motionToggle.checked; applySettings(); saveSettings(); });
+      elements.resetIdentityButton.addEventListener("click", handleResetIdentity);
+      elements.reportForm.addEventListener("submit", prepareProblemReport);
+      elements.copyReportButton.addEventListener("click", copyProblemReport);
+      elements.guestName.addEventListener("input", () => elements.guestName.removeAttribute("aria-invalid"));
+      elements.problemDescription.addEventListener("input", () => elements.problemDescription.removeAttribute("aria-invalid"));
 
-    setInterval(heartbeat, 30000);
-
-    if (guestName) heartbeat();
+      applySettings();
+      restoreProfile();
+      setupNav();
+      // A GET can verify whether the API is reachable without claiming the visitor is online.
+      refreshUsers({ initial: true });
+    })();
   </script>
 </body>
 </html>
